@@ -27,6 +27,7 @@ public class ApplicationUser implements Jsonify {
     String password;
 
     @NotBlank(message = "Email cannot be empty")
+    @Size(max = 1000, message = "Email must be at most 1000 characters")
     @Email(message = "Invalid Email address")
     String email;
 
