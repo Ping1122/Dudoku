@@ -1,0 +1,4 @@
+- add validation for signup
+- try to override the simple failure handler
+- complex password validator
+- unify server returned time format
