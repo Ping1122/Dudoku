@@ -2,3 +2,4 @@
 - try to override the simple failure handler
 - complex password validator
 - unify server returned time format
+- notify user when they have unfinish game and trying to switch diffculit mode

@@ -17,9 +17,6 @@ public class ApplicationUserController {
     @Autowired
     private ApplicationUserService applicationUserService;
 
-    @Autowired
-    private JsonWebToken jsonWebToken;
-
     @GetMapping("api/user/all")
     public List<ApplicationUser> getUsers() throws Exception {
         return applicationUserService.getAllUsers();
@@ -27,8 +24,7 @@ public class ApplicationUserController {
 
     @GetMapping("/api/me")
     public ApplicationUser getUserByEmail(HttpServletRequest request) throws Exception {
-        String token = request.getHeader("x-auth-token").substring(7);
-        String email = jsonWebToken.getKeyFromToken(token);
+        String email = applicationUserService.getEmailfromRequest(request);
         return applicationUserService.getUserByEmail(email);
     }
 }

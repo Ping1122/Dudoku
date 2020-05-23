@@ -2,11 +2,15 @@ package com.pingxin.service;
 
 import java.util.List;
 
+import com.pingxin.model.JsonWebToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.pingxin.model.ApplicationUser;
 import com.pingxin.repository.ApplicationUserRepository;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class ApplicationUserService {
@@ -14,6 +18,8 @@ public class ApplicationUserService {
     @Autowired
     private ApplicationUserRepository applicationUserRepository;
 
+    @Autowired
+    private JsonWebToken jsonWebToken;
 
     public List<ApplicationUser> getAllUsers() {
         return applicationUserRepository.findAll();
@@ -34,5 +40,11 @@ public class ApplicationUserService {
 
     public void saveUser(ApplicationUser applicationUser) {
         applicationUserRepository.save(applicationUser);
+    }
+
+    public String getEmailfromRequest(HttpServletRequest request) {
+        String token = request.getHeader("x-auth-token").substring(7);
+        String email = jsonWebToken.getKeyFromToken(token);
+        return email;
     }
 }

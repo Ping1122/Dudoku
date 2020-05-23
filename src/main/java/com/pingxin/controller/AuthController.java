@@ -4,6 +4,8 @@ import javax.validation.Valid;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,20 +25,21 @@ public class AuthController {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @PostMapping("/api/register")
-    public Object register(@Valid @RequestBody ApplicationUser user) throws Exception{
+    public ResponseEntity<Object> register(@Valid @RequestBody ApplicationUser user) throws Exception {
+        System.out.println(user.toJson());
         String email = user.getEmail();
         if (applicationUserService.existsUserWithEmail(email)) {
-            return new ErrorResponse(
+            return new ResponseEntity<>(new ErrorResponse(
                     new Date(),
                     400,
                     "Bad Request",
                     "Email address already used",
                     "/api/register"
-            );
+            ), HttpStatus.BAD_REQUEST);
         }
         user.convertToNewUser();
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         applicationUserService.saveUser(user);
-        return user;
+        return new ResponseEntity<>(user.toJson(), HttpStatus.OK);
     }
 }
