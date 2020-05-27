@@ -3,7 +3,7 @@ package com.pingxin.model;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-public class FillCellRequest {
+public class ModifyCellRequest {
 
     @Min(value = 0, message = "Position index cannot less than 0")
     @Max(value = 8, message = "Position index cannot greater than 8")

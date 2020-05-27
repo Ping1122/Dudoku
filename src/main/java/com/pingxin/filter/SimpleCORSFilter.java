@@ -21,7 +21,6 @@ public class SimpleCORSFilter extends OncePerRequestFilter {
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
-
         chain.doFilter(request, response);
     }
 }

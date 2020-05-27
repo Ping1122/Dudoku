@@ -48,4 +48,18 @@ public class SudokuService {
     public int fillCell(Sudoku sudoku, int x, int y, int value) {
         return sudoku.fillCell(x, y, value);
     }
+
+    public int deleteCell(Sudoku sudoku, int x, int y) {
+        return sudoku.deleteCell(x, y);
+    }
+
+    public int endGame(Sudoku sudoku, String reason, String email) {
+        if (reason.equals("timeout") && sudoku.getTimeExpired() < Sudoku.getExpirationTime()-1000) return -1;
+        if (reason.equals("mistake") && sudoku.getMistakes() < 3) return -1;
+        if (reason.equals("complete") && sudoku.getRemainingCells() != 0 && sudoku.getMistakes() < 3) return -1;
+        sudoku.setEnded(true);
+        sudoku.setReason(reason);
+        sudokuGames.remove(email);
+        return 0;
+    }
 }

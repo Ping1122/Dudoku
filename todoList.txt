@@ -1,5 +1,6 @@
-- add validation for signup
+- add validation for sign up
 - try to override the simple failure handler
 - complex password validator
 - unify server returned time format
-- notify user when they have unfinish game and trying to switch diffculit mode
+- notify user when they have unfinished game and trying to switch diffculit mode
+- assign a game id, make sure that fill cell request on the same game by comparing the id in the request and game list.

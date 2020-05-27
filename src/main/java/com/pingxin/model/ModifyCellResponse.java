@@ -1,12 +1,14 @@
 package com.pingxin.model;
 
-public class FillCellResponse {
+public class ModifyCellResponse {
     private String result;
     private int mistakes;
+    private int remainingCells;
 
-    public FillCellResponse(String result, int mistakes) {
+    public ModifyCellResponse(String result, int mistakes, int remainingCells) {
         this.result = result;
         this.mistakes = mistakes;
+        this.remainingCells = remainingCells;
     }
 
     public String getResult() {
@@ -23,5 +25,13 @@ public class FillCellResponse {
 
     public void setMistakes(int mistakes) {
         this.mistakes = mistakes;
+    }
+
+    public int getRemainingCells() {
+        return remainingCells;
+    }
+
+    public void setRemainingCells(int remainingCells) {
+        this.remainingCells = remainingCells;
     }
 }
