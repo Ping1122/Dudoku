@@ -1,7 +1,9 @@
 package com.pingxin.controller;
 
+import com.pingxin.agent.DudokuAutoPlayer;
 import com.pingxin.model.*;
 import com.pingxin.service.ApplicationUserService;
+import com.pingxin.service.DudokuService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,21 +11,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-import com.pingxin.service.SudokuService;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RestController
-public class SudokuController {
+public class DudokuController {
 
     @Autowired
-    private SudokuService sudokuService;
+    private DudokuService dudokuService;
 
     @Autowired
     private ApplicationUserService applicationUserService;
 
-    @GetMapping("/api/sudoku/{level}")
+    @GetMapping("/api/dudoku/{level}")
     public ResponseEntity<Object> getSudoku(@PathVariable(value="level") String level, HttpServletRequest request)
             throws Exception{
         final List<String> supportedLevels = Arrays.asList("easy", "medium", "hard", "expert");
@@ -33,54 +33,65 @@ public class SudokuController {
                     400,
                     "Bad Request",
                     "Invalid Difficulty Level",
-                    "/api/sudoku"
+                    "/api/dudoku"
             ), HttpStatus.BAD_REQUEST);
         }
         String email = applicationUserService.getEmailfromRequest(request);
-        Sudoku sudoku = sudokuService.getUnfishedGame(email);
-        if (sudoku != null) {
-            return new ResponseEntity<>(sudoku, HttpStatus.OK);
+        Dudoku dudoku = dudokuService.getUnfishedGame(email);
+        if (dudoku != null) {
+            return new ResponseEntity<>(dudoku, HttpStatus.OK);
         }
-        List<String> sudokuAndSolution = sudokuService.getSudokuAndSolution(level);
-        sudoku = sudokuService.createSudokuGame(email, sudokuAndSolution.get(0), sudokuAndSolution.get(1));
-        return new ResponseEntity<>(sudoku, HttpStatus.OK);
+        List<String> dudokuAndSolution = dudokuService.getDudokuAndSolution(level);
+        dudoku = dudokuService.createDudokuGame(dudokuAndSolution.get(0), dudokuAndSolution.get(1), email, "Computer");
+        DudokuAutoPlayer autoPlayer = new DudokuAutoPlayer(dudoku);
+        autoPlayer.start();
+        return new ResponseEntity<>(dudoku, HttpStatus.OK);
     }
 
-    @PutMapping("api/sudoku/cell")
+    @PutMapping("api/dudoku/cell")
     public ResponseEntity<Object> fillCell(@Valid @RequestBody ModifyCellRequest modifyCellRequest, HttpServletRequest request)
             throws Exception {
         String email = applicationUserService.getEmailfromRequest(request);
-        Sudoku sudoku = sudokuService.getUnfishedGame(email);
-        if (sudoku == null) {
+        Dudoku dudoku = dudokuService.getUnfishedGame(email);
+        if (dudoku == null) {
             return new ResponseEntity<Object>(new ErrorResponse(
                     new Date(),
                     400,
                     "Bad Request",
                     "The game has already ended",
-                    "api/sudoku/cell"
+                    "api/dudoku/cell"
             ), HttpStatus.BAD_REQUEST);
         }
-        int status = sudokuService.fillCell(sudoku, modifyCellRequest.getX(), modifyCellRequest.getY(), modifyCellRequest.getValue());
+        int status = dudokuService.fillCell(dudoku, modifyCellRequest.getX(), modifyCellRequest.getY(), modifyCellRequest.getValue(), email);
         if (status == -1) {
             return new ResponseEntity<Object>(new ErrorResponse(
                     new Date(),
                     400,
                     "Bad Request",
                     "Attempt to fill a pre-filled cell",
-                    "api/sudoku/cell"
+                    "api/dudoku/cell"
+            ), HttpStatus.BAD_REQUEST);
+        }
+        if (status == -2) {
+            return new ResponseEntity<Object>(new ErrorResponse(
+                    new Date(),
+                    400,
+                    "Bad Request",
+                    "Attempt to fill a filled cell",
+                    "api/dudoku/cell"
             ), HttpStatus.BAD_REQUEST);
         }
         if (status > 0) {
-            return new ResponseEntity<Object>(new ModifyCellResponse("incorrect", status, sudoku.getRemainingCells()), HttpStatus.OK);
+            return new ResponseEntity<Object>(new ModifyCellResponse("incorrect", status, dudoku.getRemainingCells()), HttpStatus.OK);
         }
-        return new ResponseEntity<Object>(new ModifyCellResponse("correct", 0, sudoku.getRemainingCells()), HttpStatus.OK);
+        return new ResponseEntity<Object>(new ModifyCellResponse("correct", 0, dudoku.getRemainingCells()), HttpStatus.OK);
     }
 
-    @DeleteMapping("api/sudoku/cell")
+    @DeleteMapping("api/dudoku/cell")
     public ResponseEntity<Object> eraseCell(@Valid @RequestBody ModifyCellRequest modifyCellRequest, HttpServletRequest request){
         String email = applicationUserService.getEmailfromRequest(request);
-        Sudoku sudoku = sudokuService.getUnfishedGame(email);
-        if (sudoku == null) {
+        Dudoku dudoku = dudokuService.getUnfishedGame(email);
+        if (dudoku == null) {
             return new ResponseEntity<Object>(new ErrorResponse(
                     new Date(),
                     400,
@@ -89,24 +100,33 @@ public class SudokuController {
                     "api/sudoku/cell"
             ), HttpStatus.BAD_REQUEST);
         }
-        int status = sudokuService.deleteCell(sudoku, modifyCellRequest.getX(), modifyCellRequest.getY());
+        int status = dudokuService.deleteCell(dudoku, modifyCellRequest.getX(), modifyCellRequest.getY(), email);
         if (status == -1) {
             return new ResponseEntity<Object>(new ErrorResponse(
                     new Date(),
                     400,
                     "Bad Request",
                     "Attempt to delete a pre-filled cell",
-                    "api/sudoku/cell"
+                    "api/dudoku/cell"
             ), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<Object>(new ModifyCellResponse("ok", 0, sudoku.getRemainingCells()), HttpStatus.OK);
+        if (status == -2) {
+            return new ResponseEntity<Object>(new ErrorResponse(
+                    new Date(),
+                    400,
+                    "Bad Request",
+                    "Attempt to delete a correct cell filled by opponent",
+                    "api/dudoku/cell"
+            ), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<Object>(new ModifyCellResponse("ok", 0, dudoku.getRemainingCells()), HttpStatus.OK);
     }
 
-    @PutMapping("/api/sudoku")
+    @PutMapping("/api/dudoku")
     public ResponseEntity<Object> endGame(@RequestBody EndGameRequest endGameRequest, HttpServletRequest request) {
         String email = applicationUserService.getEmailfromRequest(request);
-        Sudoku sudoku = sudokuService.getUnfishedGame(email);
-        if (sudoku == null) {
+        Dudoku dudoku = dudokuService.getUnfishedGame(email);
+        if (dudoku == null) {
             return new ResponseEntity<Object>(new ErrorResponse(
                     new Date(),
                     400,
@@ -123,10 +143,10 @@ public class SudokuController {
                     400,
                     "Bad Request",
                     "End game reason not supported",
-                    "api/sudoku"
+                    "api/dudoku"
             ), HttpStatus.BAD_REQUEST);
         }
-        int status = sudokuService.endGame(sudoku, reason, email);
+        int status = dudokuService.endGame(dudoku, reason, email);
         if (status == -1) {
             return new ResponseEntity<Object>(new ErrorResponse(
                     new Date(),
@@ -137,7 +157,7 @@ public class SudokuController {
             ), HttpStatus.BAD_REQUEST);
         }
         Map<String, Integer> response = new HashMap<>();
-        response.put("timeExpired", sudoku.getTimeExpired());
+        response.put("timeExpired", dudoku.getTimeExpired());
         return new ResponseEntity<Object>(response, HttpStatus.OK);
     }
 }

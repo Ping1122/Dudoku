@@ -33,7 +33,6 @@ public class SudokuService {
     public Sudoku getUnfishedGame(String email) {
         Sudoku sudoku = sudokuGames.get(email);
         if (sudoku != null && sudoku.isExpired()) {
-            sudokuGames.remove(email);
             return null;
         }
         return sudoku;
@@ -54,7 +53,7 @@ public class SudokuService {
     }
 
     public int endGame(Sudoku sudoku, String reason, String email) {
-        if (reason.equals("timeout") && sudoku.getTimeExpired() < Sudoku.getExpirationTime()-1000) return -1;
+        if (reason.equals("timeout") && sudoku.getTimeExpired() < Sudoku.getExpirationTime()-2000) return -1;
         if (reason.equals("mistake") && sudoku.getMistakes() < 3) return -1;
         if (reason.equals("complete") && sudoku.getRemainingCells() != 0 && sudoku.getMistakes() < 3) return -1;
         sudoku.setEnded(true);
