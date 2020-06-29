@@ -41,6 +41,11 @@ public class ApplicationUser implements Jsonify {
     public ApplicationUser() {
     }
 
+    public ApplicationUser(String email, String username, int zero) {
+        this.email = email;
+        this.username = username;
+    }
+
     public ApplicationUser(String password, String email) {
         this.password = password;
         this.email = email;

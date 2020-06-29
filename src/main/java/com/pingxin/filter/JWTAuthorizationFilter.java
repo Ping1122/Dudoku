@@ -28,7 +28,9 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter{
                                   HttpServletResponse res,
                                   FilterChain chain) throws IOException, ServletException {
         System.out.println("JWTAuthorizationFilter called");
+        System.out.println(req.getContextPath());
         String header = req.getHeader("x-auth-token");
+        System.out.println(header);
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(req, res);
             return;
@@ -44,10 +46,11 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter{
         token = token.substring(7);
         String user = null;
         try {
-            user = jsonWebToken.getKeyFromToken(token);
+            user = jsonWebToken.getKeyFromToken(token).split(" ")[0];
         } catch (Exception e) {
             return null;
         }
+        System.out.println("token valid");
         return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
     }
 

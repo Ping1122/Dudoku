@@ -1,10 +1,12 @@
 package com.pingxin.model;
 
 import java.util.Date;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Sudoku {
 
     private static final int expirationTime = 20*60*1000;
+    private int id;
     private String player;
     private int[][] board;
     private int[][] solution;
@@ -16,6 +18,7 @@ public class Sudoku {
     private int remainingCells;
 
     public Sudoku(String player, String board, String solution) {
+        this.id = ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE);
         this.player = player;
         this.board = new int[9][9];
         this.solution = new int[9][9];

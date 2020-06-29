@@ -52,7 +52,8 @@ public class SudokuService {
         return sudoku.deleteCell(x, y);
     }
 
-    public int endGame(Sudoku sudoku, String reason, String email) {
+    public synchronized int endGame(Sudoku sudoku, String reason, String email) {
+        if (sudoku.isEnded()) return -2;
         if (reason.equals("timeout") && sudoku.getTimeExpired() < Sudoku.getExpirationTime()-2000) return -1;
         if (reason.equals("mistake") && sudoku.getMistakes() < 3) return -1;
         if (reason.equals("complete") && sudoku.getRemainingCells() != 0 && sudoku.getMistakes() < 3) return -1;

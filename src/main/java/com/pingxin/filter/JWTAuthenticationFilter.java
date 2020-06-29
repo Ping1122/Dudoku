@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.pingxin.service.ApplicationUserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,11 +26,13 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     private AuthenticationManager authenticationManager;
     private JsonWebToken jsonWebToken;
-    private String username;
+    private ApplicationUser applicationUser;
+    private ApplicationUserService applicationUserService;
 
-    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, JsonWebToken jsonWebToken) {
+    public JWTAuthenticationFilter(AuthenticationManager authenticationManager, JsonWebToken jsonWebToken, ApplicationUserService applicationUserService) {
         this.authenticationManager = authenticationManager;
         this.jsonWebToken = jsonWebToken;
+        this.applicationUserService = applicationUserService;
     }
 
     @Override
@@ -41,7 +44,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         try {
             ApplicationUser creds = new ObjectMapper()
                     .readValue(req.getInputStream(), ApplicationUser.class);
-            this.username = creds.getEmail();
+            this.applicationUser = applicationUserService.getUserByEmail(creds.getEmail());
+            System.out.println(applicationUser.toJson());
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             creds.getEmail(),
@@ -61,7 +65,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             FilterChain chain,
                                             Authentication auth) throws IOException, ServletException {
         System.out.println("JWTAuthenticationFilter successfulAuthentication called");
-        String token = jsonWebToken.generateToken(this.username);
+        String key = this.applicationUser.getEmail() + " " + this.applicationUser.getUsername();
+        String token = jsonWebToken.generateToken(key);
         res.addHeader("x-auth-token", "Bearer " + token);
         res.addHeader("content-type", "application/json");
         res.getWriter().write(new JWTResponse("Bearer " + token).toJson());

@@ -24,7 +24,7 @@ public class ApplicationUserController {
 
     @GetMapping("/api/me")
     public ApplicationUser getUserByEmail(HttpServletRequest request) throws Exception {
-        String email = applicationUserService.getEmailfromRequest(request);
+        String email = applicationUserService.getEmailFromRequest(request);
         return applicationUserService.getUserByEmail(email);
     }
 }

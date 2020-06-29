@@ -1,5 +1,6 @@
 package com.pingxin.config;
 
+import com.pingxin.service.ApplicationUserService;
 import com.sun.tools.javac.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +28,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private ApplicationUserDetailService applicationUserDetailService;
 
     @Autowired
+    private ApplicationUserService applicationUserService;
+
+    @Autowired
     private JsonWebToken jsonWebToken;
 
     @Bean
@@ -43,13 +47,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
-//                .authorizeRequests()
-//                .antMatchers(HttpMethod.POST, "/api/register").permitAll()
-//                .antMatchers(HttpMethod.GET, "/").permitAll()
-//                .anyRequest().authenticated()
-//                .and()
-//                .addFilter(new JWTAuthenticationFilter(authenticationManagerBean(), jsonWebToken))
-//                .addFilter(new JWTAuthorizationFilter(authenticationManagerBean(), jsonWebToken))
+                .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/api/register").permitAll()
+                .antMatchers(HttpMethod.GET, "/").permitAll()
+                .antMatchers("/opponent-actions/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .addFilter(new JWTAuthenticationFilter(authenticationManagerBean(), jsonWebToken, applicationUserService))
+                .addFilter(new JWTAuthorizationFilter(authenticationManagerBean(), jsonWebToken))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 

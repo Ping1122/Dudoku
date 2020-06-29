@@ -42,9 +42,19 @@ public class ApplicationUserService {
         applicationUserRepository.save(applicationUser);
     }
 
-    public String getEmailfromRequest(HttpServletRequest request) {
+    public String getEmailFromRequest(HttpServletRequest request) {
         String token = request.getHeader("x-auth-token").substring(7);
-        String email = jsonWebToken.getKeyFromToken(token);
-        return email;
+        return jsonWebToken.getKeyFromToken(token).split(" ")[0];
     }
+
+    public String getUsernameFromRequest(HttpServletRequest request) {
+        String token = request.getHeader("x-auth-token").substring(7);
+        return jsonWebToken.getKeyFromToken(token).split(" ")[1];
+    }
+
+    public String getCredsFromRequest(HttpServletRequest request) {
+        String token = request.getHeader("x-auth-token").substring(7);
+        return jsonWebToken.getKeyFromToken(token);
+    }
+
 }

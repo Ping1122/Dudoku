@@ -36,7 +36,7 @@ public class SudokuController {
                     "/api/sudoku"
             ), HttpStatus.BAD_REQUEST);
         }
-        String email = applicationUserService.getEmailfromRequest(request);
+        String email = applicationUserService.getEmailFromRequest(request);
         Sudoku sudoku = sudokuService.getUnfishedGame(email);
         if (sudoku != null) {
             return new ResponseEntity<>(sudoku, HttpStatus.OK);
@@ -49,7 +49,7 @@ public class SudokuController {
     @PutMapping("api/sudoku/cell")
     public ResponseEntity<Object> fillCell(@Valid @RequestBody ModifyCellRequest modifyCellRequest, HttpServletRequest request)
             throws Exception {
-        String email = applicationUserService.getEmailfromRequest(request);
+        String email = applicationUserService.getEmailFromRequest(request);
         Sudoku sudoku = sudokuService.getUnfishedGame(email);
         if (sudoku == null) {
             return new ResponseEntity<Object>(new ErrorResponse(
@@ -78,7 +78,7 @@ public class SudokuController {
 
     @DeleteMapping("api/sudoku/cell")
     public ResponseEntity<Object> eraseCell(@Valid @RequestBody ModifyCellRequest modifyCellRequest, HttpServletRequest request){
-        String email = applicationUserService.getEmailfromRequest(request);
+        String email = applicationUserService.getEmailFromRequest(request);
         Sudoku sudoku = sudokuService.getUnfishedGame(email);
         if (sudoku == null) {
             return new ResponseEntity<Object>(new ErrorResponse(
@@ -104,7 +104,7 @@ public class SudokuController {
 
     @PutMapping("/api/sudoku")
     public ResponseEntity<Object> endGame(@RequestBody EndGameRequest endGameRequest, HttpServletRequest request) {
-        String email = applicationUserService.getEmailfromRequest(request);
+        String email = applicationUserService.getEmailFromRequest(request);
         Sudoku sudoku = sudokuService.getUnfishedGame(email);
         if (sudoku == null) {
             return new ResponseEntity<Object>(new ErrorResponse(
@@ -134,6 +134,15 @@ public class SudokuController {
                     "Bad Request",
                     "End game reason not valid",
                     "api/sudoku"
+            ), HttpStatus.BAD_REQUEST);
+        }
+        if (status == -2) {
+            return new ResponseEntity<Object>(new ErrorResponse(
+                    new Date(),
+                    400,
+                    "Bad Request",
+                    "The game has already ended",
+                    "api/sudoku/cell"
             ), HttpStatus.BAD_REQUEST);
         }
         Map<String, Integer> response = new HashMap<>();
